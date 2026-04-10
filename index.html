@@ -573,10 +573,14 @@ main {
     <div class="mode-strip">
       <button class="mode-tab active" id="dailyTab" onclick="setMode('daily')">📅 Daily</button>
       <button class="mode-tab" id="unlimitedTab" onclick="setMode('unlimited')">∞ Unlimited</button>
+      <button class="mode-tab" id="mustangTab" onclick="setMode('mustang')">🐎 Mustang</button>
     </div>
 
     <!-- Hard mode badge -->
     <div class="hard-badge" id="hardBadge">⚡ Hard Mode — reuse all confirmed hints</div>
+
+    <!-- Mustang mode banner -->
+    <div class="hard-badge" id="mustangBadge" style="display:none; background:rgba(232,55,74,0.08); border-color:rgba(232,55,74,0.35); color:#ff8090;">🐎 Mustang Mode — only Mustangs in the pool</div>
 
     <!-- Status -->
     <div class="status-msg" id="statusMsg"></div>
@@ -867,10 +871,18 @@ let S = {
   garage: [], // array of {name, year, guessCount}
 };
 
+// Mustang-only pool
+const MUSTANGS = CARS.filter(c => c.name.startsWith('Ford Mustang'));
+
+function getActiveCars() {
+  return S.mode === 'mustang' ? MUSTANGS : CARS;
+}
+
 function getDailyIdx() {
+  const pool = getActiveCars();
   const epoch = new Date('2024-01-01'); const today = new Date();
   today.setHours(0,0,0,0);
-  return Math.floor((today-epoch)/86400000) % CARS.length;
+  return Math.floor((today-epoch)/86400000) % pool.length;
 }
 
 function loadPersist() {
@@ -896,8 +908,9 @@ function saveDailyState() {
 
 function initGame() {
   loadPersist();
+  const pool = getActiveCars();
   if (S.mode === 'daily') {
-    S.target = CARS[getDailyIdx()];
+    S.target = pool[getDailyIdx()];
     const key = 'carodle_daily_' + new Date().toISOString().slice(0,10);
     const saved = localStorage.getItem(key);
     if (saved) {
@@ -910,7 +923,7 @@ function initGame() {
     }
     S.guesses = []; S.gameOver = false; S.won = false; S.confirmedHints = {};
   } else {
-    S.target = CARS[Math.floor(Math.random() * CARS.length)];
+    S.target = pool[Math.floor(Math.random() * pool.length)];
     S.guesses = []; S.gameOver = false; S.won = false; S.confirmedHints = {};
   }
   renderAll();
@@ -919,7 +932,7 @@ function initGame() {
 function rebuildConfirmedHints() {
   S.confirmedHints = {};
   S.guesses.forEach(n => {
-    const car = CARS.find(c => c.name.toLowerCase() === n.toLowerCase());
+    const car = getActiveCars().find(c => c.name.toLowerCase() === n.toLowerCase());
     if (!car) return;
     ATTRS.forEach(a => {
       if (compareAttr(a, car[a], S.target[a]) === 'green') S.confirmedHints[a] = car[a];
@@ -931,6 +944,7 @@ function setMode(m) {
   S.mode = m;
   document.getElementById('dailyTab').classList.toggle('active', m==='daily');
   document.getElementById('unlimitedTab').classList.toggle('active', m==='unlimited');
+  document.getElementById('mustangTab').classList.toggle('active', m==='mustang');
   initGame();
 }
 
@@ -992,6 +1006,7 @@ function renderAll() {
   document.getElementById('inputArea').style.display = S.gameOver ? 'none' : 'block';
   document.getElementById('hardModeBtn').classList.toggle('lit', S.hardMode);
   document.getElementById('hardBadge').classList.toggle('show', S.hardMode && !S.gameOver);
+  document.getElementById('mustangBadge').style.display = (S.mode === 'mustang' && !S.gameOver) ? 'flex' : 'none';
 }
 
 function renderRPM() {
@@ -1017,7 +1032,7 @@ function renderGuesses() {
   const container = document.getElementById('guessHistory');
   container.innerHTML = '';
   S.guesses.forEach((name, ri) => {
-    const car = CARS.find(c => c.name.toLowerCase() === name.toLowerCase());
+    const car = getActiveCars().find(c => c.name.toLowerCase() === name.toLowerCase());
     if (!car) return;
     const row = document.createElement('div');
     row.className = 'guess-row';
@@ -1129,7 +1144,7 @@ function submitGuess() {
   const val = input.value.trim();
   if (!val) return;
 
-  const car = CARS.find(c => c.name.toLowerCase() === val.toLowerCase());
+  const car = getActiveCars().find(c => c.name.toLowerCase() === val.toLowerCase());
   if (!car) { showStatus('Unknown car — pick from the suggestions', 'error'); shakeInput(); return; }
   if (S.guesses.some(g => g.toLowerCase() === car.name.toLowerCase())) {
     showStatus('Already guessed that one!', 'error'); shakeInput(); return;
@@ -1184,7 +1199,7 @@ document.getElementById('carInput').addEventListener('input', function() {
   const v = this.value.toLowerCase().trim();
   const list = document.getElementById('acList');
   if (!v) { list.style.display='none'; return; }
-  const matches = CARS.filter(c =>
+  const matches = getActiveCars().filter(c =>
     (c.name.toLowerCase().includes(v) || c.brand.toLowerCase().includes(v)) &&
     !S.guesses.some(g => g.toLowerCase() === c.name.toLowerCase())
   ).slice(0,8);
@@ -1269,10 +1284,11 @@ function showResult() {
   document.getElementById('funFactBox').innerHTML = `🏎️ <strong>Fast Fact:</strong> ${t.fact}`;
 
   // Share grid
-  let grid = `🏎️ Carodle${S.mode==='daily'?' #'+(getDailyIdx()+1):' (Unlimited)'}\n`;
+  const modeLabel = S.mode==='daily' ? ' #'+(getDailyIdx()+1) : S.mode==='mustang' ? ' 🐎 Mustang Mode' : ' (Unlimited)';
+  let grid = `🏎️ Carodle${modeLabel}\n`;
   grid += S.won ? `Got it in ${gc}/7\n\n` : 'DNF\n\n';
   S.guesses.forEach(name => {
-    const car = CARS.find(c => c.name.toLowerCase() === name.toLowerCase());
+    const car = getActiveCars().find(c => c.name.toLowerCase() === name.toLowerCase());
     ATTRS.forEach(a => {
       const r = compareAttr(a, car[a], t[a]);
       grid += r==='green'?'🟩':r==='yellow'?'🟨':'⬜';
@@ -1284,6 +1300,8 @@ function showResult() {
   const btn = document.getElementById('playAgainBtn');
   if (S.mode === 'daily') {
     btn.textContent = 'See Stats'; btn.onclick = () => document.getElementById('resultModal').classList.remove('show');
+  } else if (S.mode === 'mustang') {
+    btn.textContent = '🐎 Next Mustang'; btn.onclick = () => { document.getElementById('resultModal').classList.remove('show'); setMode('mustang'); };
   } else {
     btn.textContent = 'New Car →'; btn.onclick = () => { document.getElementById('resultModal').classList.remove('show'); setMode('unlimited'); };
   }
