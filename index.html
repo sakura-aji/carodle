@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carodle 🏎️</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0c;
+  --bg2: #111116;
+  --surface: #17171f;
+  --card: #1e1e28;
+  --card2: #252530;
+  --border: #2e2e3e;
+  --border2: #3a3a4e;
+  --text: #f0f0f8;
+  --text-muted: #7070a0;
+  --text-dim: #4a4a6a;
+  --red: #e8374a;
+  --red-dim: #3a1018;
+  --red-glow: rgba(232,55,74,0.25);
+  --green: #00e5a0;
+  --green-bg: rgba(0,229,160,0.12);
+  --green-border: rgba(0,229,160,0.35);
+  --yellow: #f5c842;
+  --yellow-bg: rgba(245,200,66,0.12);
+  --yellow-border: rgba(245,200,66,0.35);
+  --grey: #484860;
+  --grey-bg: rgba(72,72,96,0.2);
+  --grey-border: rgba(72,72,96,0.4);
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'Barlow', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Racing stripe background */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    linear-gradient(105deg, transparent 48%, rgba(232,55,74,0.03) 48.5%, rgba(232,55,74,0.03) 49.5%, transparent 50%),
+    linear-gradient(105deg, transparent 52%, rgba(232,55,74,0.02) 52.5%, rgba(232,55,74,0.02) 53.5%, transparent 54%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,12,0.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  max-width: 1000px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 62px;
+}
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem; font-weight: 900;
+  letter-spacing: 0.05em;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-car { font-size: 1.4rem; }
+.logo-c { color: var(--red); }
+.logo-rest { color: var(--text); }
+.logo-line {
+  width: 3px; height: 28px;
+  background: linear-gradient(180deg, var(--red), transparent);
+  margin: 0 2px;
+}
+
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.pill-btn {
+  font-family: var(--font-body);
+  font-size: 0.78rem; font-weight: 700;
+  padding: 7px 14px; border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--card); color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.pill-btn:hover { border-color: var(--red); color: var(--text); background: var(--red-dim); }
+.pill-btn.lit { background: var(--red); color: white; border-color: var(--red); }
+
+.streak-chip {
+  background: linear-gradient(135deg, var(--red), #c02030);
+  color: white; border-radius: 6px;
+  padding: 6px 12px; font-family: var(--font-display);
+  font-size: 0.75rem; font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 0 16px var(--red-glow);
+}
+
+/* ── MAIN LAYOUT ── */
+main {
+  max-width: 1000px; margin: 0 auto;
+  padding: 24px 16px 80px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  position: relative; z-index: 1;
+}
+@media (max-width: 740px) {
+  main { grid-template-columns: 1fr; }
+  .sidebar { order: -1; }
+}
+
+/* ── MODE TABS ── */
+.mode-strip {
+  display: flex; gap: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 4px;
+  margin-bottom: 20px; width: fit-content;
+}
+.mode-tab {
+  font-family: var(--font-body);
+  font-size: 0.78rem; font-weight: 700;
+  padding: 8px 18px; border: none;
+  background: none; border-radius: 5px;
+  color: var(--text-muted); cursor: pointer;
+  transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
+  display: flex; align-items: center; gap: 6px;
+}
+.mode-tab.active {
+  background: var(--red); color: white;
+  box-shadow: 0 0 12px var(--red-glow);
+}
+
+/* ── STATUS ── */
+.status-msg {
+  padding: 11px 18px; border-radius: 8px;
+  font-weight: 600; font-size: 0.88rem;
+  margin-bottom: 14px; display: none;
+  border-left: 3px solid;
+}
+.status-msg.show { display: block; }
+.status-msg.error { background: rgba(232,55,74,0.1); color: #ff8090; border-color: var(--red); }
+.status-msg.info { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow); }
+
+/* ── ATTRIBUTE HEADER ROW ── */
+.attr-header {
+  display: grid;
+  grid-template-columns: 160px repeat(7, 1fr);
+  gap: 4px; margin-bottom: 6px;
+}
+.ah-cell {
+  font-family: var(--font-display);
+  font-size: 0.5rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-dim); text-align: center;
+  padding: 4px 2px; line-height: 1.4;
+}
+.ah-cell:first-child { text-align: left; padding-left: 6px; }
+
+/* ── GUESS ROWS ── */
+.guess-history { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+
+.guess-row {
+  display: grid;
+  grid-template-columns: 160px repeat(7, 1fr);
+  gap: 4px;
+  opacity: 0; transform: translateX(-12px);
+  animation: rowSlide 0.35s ease forwards;
+}
+@keyframes rowSlide { to { opacity: 1; transform: translateX(0); } }
+
+.car-name-cell {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center;
+  padding: 8px 12px;
+  min-height: 62px;
+}
+.car-name-main { font-weight: 700; font-size: 0.8rem; line-height: 1.2; color: var(--text); }
+.car-name-sub { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+.attr-cell {
+  border-radius: 8px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 6px 3px; min-height: 62px;
+  font-size: 0.65rem; font-weight: 600;
+  text-align: center; line-height: 1.3;
+  border: 1px solid transparent;
+  opacity: 0; transform: rotateX(-60deg) scale(0.9);
+  animation: cellFlip 0.45s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+.attr-cell:nth-child(2) { animation-delay: 0.04s; }
+.attr-cell:nth-child(3) { animation-delay: 0.09s; }
+.attr-cell:nth-child(4) { animation-delay: 0.14s; }
+.attr-cell:nth-child(5) { animation-delay: 0.19s; }
+.attr-cell:nth-child(6) { animation-delay: 0.24s; }
+.attr-cell:nth-child(7) { animation-delay: 0.29s; }
+.attr-cell:nth-child(8) { animation-delay: 0.34s; }
+@keyframes cellFlip {
+  to { opacity: 1; transform: rotateX(0) scale(1); }
+}
+
+.attr-cell .cell-icon { font-size: 1rem; margin-bottom: 3px; display: block; }
+.attr-cell .cell-val { font-size: 0.6rem; display: block; }
+.attr-cell .cell-arrow { font-size: 0.9rem; display: block; margin-top: 1px; color: inherit; }
+
+.cell-green { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
+.cell-yellow { background: var(--yellow-bg); border-color: var(--yellow-border); color: var(--yellow); }
+.cell-grey { background: var(--grey-bg); border-color: var(--grey-border); color: var(--grey); }
+
+/* ── EMPTY ROWS ── */
+.empty-rows { display: flex; flex-direction: column; gap: 5px; }
+.empty-row {
+  display: grid;
+  grid-template-columns: 160px repeat(7, 1fr);
+  gap: 4px;
+}
+.empty-cell {
+  min-height: 62px; border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: rgba(255,255,255,0.01);
+}
+
+/* ── HINT BANNERS ── */
+.hint-banner {
+  display: none; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 10px;
+  font-size: 0.85rem; font-weight: 600;
+  margin-bottom: 14px;
+  border: 1px solid;
+  animation: pulseGlow 2.5s ease infinite;
+}
+.hint-banner.show { display: flex; }
+.hint-engine {
+  background: rgba(245,200,66,0.08);
+  border-color: var(--yellow-border);
+  color: var(--yellow);
+}
+@keyframes pulseGlow {
+  0%,100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 12px rgba(245,200,66,0.2); }
+}
+
+/* ── INPUT AREA ── */
+.input-area { margin-bottom: 20px; }
+.input-label {
+  font-family: var(--font-display);
+  font-size: 0.6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-dim); margin-bottom: 8px;
+}
+.input-row { display: flex; gap: 8px; position: relative; }
+#carInput {
+  flex: 1; padding: 14px 16px;
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 8px; outline: none;
+  font-family: var(--font-body);
+  font-size: 0.95rem; font-weight: 500;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+#carInput:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
+}
+#carInput::placeholder { color: var(--text-dim); }
+
+.guess-btn {
+  padding: 14px 22px;
+  background: var(--red); color: white;
+  border: none; border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 0 0 var(--red-glow);
+}
+.guess-btn:hover { background: #ff4560; box-shadow: 0 0 20px var(--red-glow); transform: translateY(-1px); }
+.guess-btn:disabled { background: var(--card2); color: var(--text-dim); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── AUTOCOMPLETE ── */
+.ac-wrap { position: relative; flex: 1; }
+.autocomplete-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 10px; box-shadow: var(--shadow-lg);
+  max-height: 220px; overflow-y: auto; z-index: 50;
+}
+.ac-item {
+  padding: 10px 16px; cursor: pointer;
+  font-size: 0.88rem; font-weight: 500;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover, .ac-item.focused { background: var(--card2); }
+.ac-item-name { color: var(--text); }
+.ac-item-meta { font-size: 0.7rem; color: var(--text-muted); }
+
+/* ── SIDEBAR CARDS ── */
+.sidebar-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-muted); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title-line {
+  flex: 1; height: 1px; background: var(--border);
+}
+
+/* PROGRESS */
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.75rem; color: var(--text-muted);
+  margin-bottom: 8px; font-weight: 600;
+}
+.progress-track {
+  height: 6px; background: var(--border);
+  border-radius: 99px; overflow: hidden; margin-bottom: 12px;
+}
+.progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--red), #ff7090);
+  transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 0 8px var(--red-glow);
+}
+.attempts-indicator {
+  display: flex; gap: 5px; justify-content: center;
+}
+.attempt-dot {
+  width: 28px; height: 5px; border-radius: 99px;
+  background: var(--border); transition: background 0.3s;
+}
+.attempt-dot.used { background: var(--red); }
+.attempt-dot.won { background: var(--green); }
+
+/* LEGEND */
+.legend-rows { display: flex; flex-direction: column; gap: 10px; }
+.legend-row { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; }
+.legend-chip {
+  width: 32px; height: 32px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; flex-shrink: 0; font-weight: 700;
+}
+.legend-chip.g { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+.legend-chip.y { background: var(--yellow-bg); border: 1px solid var(--yellow-border); color: var(--yellow); }
+.legend-chip.gr { background: var(--grey-bg); border: 1px solid var(--grey-border); color: var(--grey); }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat-box {
+  background: var(--bg2); border-radius: 8px;
+  padding: 12px 8px; text-align: center;
+  border: 1px solid var(--border);
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 900; color: var(--text);
+  line-height: 1;
+}
+.stat-lbl { font-size: 0.62rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+/* GARAGE */
+.garage-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+.garage-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg2); border-radius: 7px;
+  padding: 8px 12px; font-size: 0.78rem;
+  border: 1px solid var(--border);
+}
+.garage-name { font-weight: 700; color: var(--text); }
+.garage-guesses {
+  font-family: var(--font-display); font-size: 0.65rem;
+  color: var(--green); background: var(--green-bg);
+  border-radius: 4px; padding: 2px 7px;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 200; display: flex;
+  align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px; padding: 32px;
+  max-width: 500px; width: 100%;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.show .modal { transform: translateY(0) scale(1); }
+
+.modal-badge {
+  width: 64px; height: 64px; border-radius: 50%;
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+}
+.modal-badge.win { background: var(--green-bg); border: 2px solid var(--green-border); box-shadow: 0 0 24px rgba(0,229,160,0.2); }
+.modal-badge.loss { background: var(--red-dim); border: 2px solid rgba(232,55,74,0.3); }
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 900; text-align: center;
+  margin-bottom: 4px; letter-spacing: 0.04em;
+}
+.modal-sub { text-align: center; color: var(--text-muted); font-size: 0.88rem; margin-bottom: 16px; }
+.modal-car-name {
+  font-family: var(--font-display);
+  font-size: 1rem; color: var(--red); text-align: center;
+  margin-bottom: 16px; letter-spacing: 0.06em;
+}
+
+.specs-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 8px; margin-bottom: 16px;
+}
+.spec-item {
+  background: var(--bg2); border-radius: 8px;
+  padding: 10px 12px; font-size: 0.78rem;
+  border: 1px solid var(--border);
+}
+.spec-lbl { color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.spec-val { color: var(--text); font-weight: 700; margin-top: 2px; }
+
+.fun-fact-box {
+  background: var(--bg2); border-radius: 10px; padding: 14px 16px;
+  font-size: 0.83rem; line-height: 1.65; color: var(--text);
+  border-left: 3px solid var(--red); margin-bottom: 16px;
+}
+
+.share-grid {
+  background: var(--bg); border-radius: 8px;
+  padding: 12px 14px; font-family: monospace;
+  font-size: 0.9rem; line-height: 1.5;
+  text-align: center; margin-bottom: 16px;
+  white-space: pre; overflow-x: auto;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.modal-btns { display: flex; gap: 10px; }
+.mbtn {
+  flex: 1; padding: 13px; border: none; border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+}
+.mbtn.primary { background: var(--red); color: white; box-shadow: 0 0 0 var(--red-glow); }
+.mbtn.primary:hover { background: #ff4560; box-shadow: 0 0 20px var(--red-glow); }
+.mbtn.secondary { background: var(--card2); color: var(--text-muted); border: 1px solid var(--border2); }
+.mbtn.secondary:hover { color: var(--text); }
+
+/* ── HOW TO PLAY MODAL ── */
+.how-section { margin-bottom: 14px; }
+.how-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 0.88rem; }
+.how-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.65; }
+.attr-pill {
+  display: inline-block; background: var(--card2);
+  border: 1px solid var(--border2); border-radius: 4px;
+  padding: 2px 7px; font-size: 0.72rem; margin: 2px;
+  color: var(--text);
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: var(--card2); color: var(--text);
+  border: 1px solid var(--border2);
+  padding: 11px 22px; border-radius: 30px;
+  font-weight: 700; font-size: 0.88rem;
+  z-index: 300; transition: transform 0.3s;
+  pointer-events: none; white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── HARD MODE BADGE ── */
+.hard-badge {
+  display: none; background: var(--yellow-bg);
+  border: 1px solid var(--yellow-border);
+  color: var(--yellow); border-radius: 6px;
+  padding: 5px 12px; font-size: 0.72rem; font-weight: 700;
+  margin-bottom: 14px; align-items: center; gap: 7px;
+}
+.hard-badge.show { display: flex; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ── SHAKE ── */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* ── RPM INDICATOR ── */
+.rpm-bar {
+  display: flex; gap: 3px; align-items: flex-end;
+  height: 20px; margin-bottom: 14px;
+}
+.rpm-seg {
+  flex: 1; border-radius: 2px;
+  transition: background 0.3s, height 0.3s;
+  background: var(--border);
+  min-height: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-car">🏎️</span>
+      <div class="logo-line"></div>
+      <span class="logo-c">C</span><span class="logo-rest">ARODLE</span>
+    </div>
+    <div class="header-right">
+      <div class="streak-chip">🔥 <span id="streakNum">0</span></div>
+      <button class="pill-btn" id="hardModeBtn" onclick="toggleHardMode()">⚡ Hard</button>
+      <button class="pill-btn" onclick="openGarage()">🏆 Garage</button>
+      <button class="pill-btn" onclick="openHow()">? Rules</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+  <!-- GAME COLUMN -->
+  <div class="game-col">
+    <!-- Mode tabs -->
+    <div class="mode-strip">
+      <button class="mode-tab active" id="dailyTab" onclick="setMode('daily')">📅 Daily</button>
+      <button class="mode-tab" id="unlimitedTab" onclick="setMode('unlimited')">∞ Unlimited</button>
+    </div>
+
+    <!-- Hard mode badge -->
+    <div class="hard-badge" id="hardBadge">⚡ Hard Mode — reuse all confirmed hints</div>
+
+    <!-- Status -->
+    <div class="status-msg" id="statusMsg"></div>
+
+    <!-- RPM bar (visual flair) -->
+    <div class="rpm-bar" id="rpmBar"></div>
+
+    <!-- Column headers -->
+    <div class="attr-header">
+      <div class="ah-cell">Car</div>
+      <div class="ah-cell">🏷️ Brand</div>
+      <div class="ah-cell">📅 Year</div>
+      <div class="ah-cell">🚗 Body</div>
+      <div class="ah-cell">⚙️ Engine</div>
+      <div class="ah-cell">⛽ Drive</div>
+      <div class="ah-cell">⚡ Power</div>
+      <div class="ah-cell">🌍 Origin</div>
+    </div>
+
+    <!-- Guess history -->
+    <div class="guess-history" id="guessHistory"></div>
+
+    <!-- Empty slots -->
+    <div class="empty-rows" id="emptySlots"></div>
+
+    <!-- Hint banners -->
+    <div class="hint-banner hint-engine" id="engineHint">
+      🔊 <span>Sound hint: This car has a <strong id="engineHintText"></strong></span>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area" id="inputArea">
+      <div class="input-label">// Enter Car Name</div>
+      <div class="input-row">
+        <div class="ac-wrap">
+          <input type="text" id="carInput" placeholder="e.g. Toyota Supra 1998…" autocomplete="off">
+          <div class="autocomplete-list" id="acList" style="display:none;"></div>
+        </div>
+        <button class="guess-btn" id="guessBtn" onclick="submitGuess()">Guess →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <!-- Progress -->
+    <div class="sidebar-card">
+      <div class="card-title">Progress <div class="card-title-line"></div></div>
+      <div class="progress-label">
+        <span id="guessCountLabel">0 / 7 guesses</span>
+        <span id="attemptsLabel">7 left</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="attempts-indicator" id="attemptDots"></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="sidebar-card">
+      <div class="card-title">Key <div class="card-title-line"></div></div>
+      <div class="legend-rows">
+        <div class="legend-row">
+          <div class="legend-chip g">✓</div>
+          <div><strong>Green</strong> — Exact match</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-chip y">~</div>
+          <div><strong>Yellow</strong> — Close (±2yr / ±1 power tier / same region)</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-chip gr">✗</div>
+          <div><strong>Grey</strong> — No match</div>
+        </div>
+      </div>
+      <div style="margin-top:12px; font-size:0.75rem; color:var(--text-muted); line-height:1.6;">
+        Year cells show <strong style="color:var(--text)">↑ newer</strong> or <strong style="color:var(--text)">↓ older</strong> directional hints.
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="sidebar-card">
+      <div class="card-title">Stats <div class="card-title-line"></div></div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="sPlayed">0</div><div class="stat-lbl">Played</div></div>
+        <div class="stat-box"><div class="stat-num" id="sWon">0</div><div class="stat-lbl">Won</div></div>
+        <div class="stat-box"><div class="stat-num" id="sStreak">0</div><div class="stat-lbl">Streak</div></div>
+      </div>
+    </div>
+
+    <!-- Garage -->
+    <div class="sidebar-card" id="garageCard">
+      <div class="card-title">🏆 Garage <div class="card-title-line"></div></div>
+      <div class="garage-list" id="garageList">
+        <div style="font-size:0.78rem; color:var(--text-dim); text-align:center; padding:12px;">Win cars to fill your garage!</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── RESULT MODAL ── -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal">
+    <div class="modal-badge" id="resultBadge"></div>
+    <div class="modal-title" id="resultTitle"></div>
+    <div class="modal-sub" id="resultSub"></div>
+    <div class="modal-car-name" id="resultCarName"></div>
+    <div class="specs-grid" id="specsGrid"></div>
+    <div class="fun-fact-box" id="funFactBox"></div>
+    <div class="share-grid" id="shareGrid"></div>
+    <div class="modal-btns">
+      <button class="mbtn secondary" onclick="copyShare()">📋 Share</button>
+      <button class="mbtn primary" id="playAgainBtn">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW TO PLAY ── -->
+<div class="modal-overlay" id="howModal">
+  <div class="modal">
+    <div class="modal-title" style="margin-bottom:18px;">How to Play 🏎️</div>
+    <div class="how-section">
+      <div class="how-title">The Goal</div>
+      <div class="how-text">Guess the hidden car in <strong>7 attempts</strong>. Type any car name to begin.</div>
+    </div>
+    <div class="how-section">
+      <div class="how-title">Attributes checked</div>
+      <div class="how-text">
+        <span class="attr-pill">🏷️ Brand</span>
+        <span class="attr-pill">📅 Year</span>
+        <span class="attr-pill">🚗 Body Type</span>
+        <span class="attr-pill">⚙️ Engine</span>
+        <span class="attr-pill">⛽ Drivetrain</span>
+        <span class="attr-pill">⚡ Power</span>
+        <span class="attr-pill">🌍 Origin</span>
+      </div>
+    </div>
+    <div class="how-section">
+      <div class="how-title">Hints</div>
+      <div class="how-text">
+        Year shows <strong>↑</strong> (target is newer) or <strong>↓</strong> (older).<br>
+        Yellow on Year = within ±2 years. Yellow on Power = ±1 tier. Yellow on Origin = same continent.
+      </div>
+    </div>
+    <div class="how-section">
+      <div class="how-title">Hard Mode ⚡</div>
+      <div class="how-text">Every green hint must be reused in future guesses.</div>
+    </div>
+    <button class="mbtn primary" style="width:100%; margin-top:6px;" onclick="closeHow()">Let's Race 🏁</button>
+  </div>
+</div>
+
+<!-- ── GARAGE MODAL ── -->
+<div class="modal-overlay" id="garageModal">
+  <div class="modal">
+    <div class="modal-title" style="margin-bottom:18px;">🏆 Your Garage</div>
+    <div id="garageModalList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; max-height:360px; overflow-y:auto;"></div>
+    <button class="mbtn secondary" style="width:100%;" onclick="document.getElementById('garageModal').classList.remove('show')">Close</button>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+// CAR DATABASE — 80 cars
+// ════════════════════════════════════════════════════
+const CARS = [
+  // Japan
+  {name:"Toyota Supra",year:1998,brand:"Toyota",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"Japan",fact:"The A80 Supra's 2JZ-GTE engine is legendary — tuned examples have exceeded 1000hp on stock internals.",sound:"inline-6 twin-turbo wail"},
+  {name:"Toyota GR86",year:2022,brand:"Toyota",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Medium",origin:"Japan",fact:"Co-developed with Subaru, the GR86 uses a boxer engine for an ultra-low centre of gravity.",sound:"flat-four boxer rasp"},
+  {name:"Toyota Camry",year:2020,brand:"Toyota",body:"Sedan",engine:"Hybrid",drive:"FWD",power:"Medium",origin:"Japan",fact:"The Camry has been America's best-selling car for over 20 consecutive years.",sound:"near-silent hybrid whisper"},
+  {name:"Honda NSX",year:1991,brand:"Honda",body:"Supercar",engine:"Petrol",drive:"RWD",power:"Medium",origin:"Japan",fact:"Ayrton Senna helped develop the original NSX's chassis dynamics on Honda's test track.",sound:"VTEC V6 screech"},
+  {name:"Honda Civic Type R",year:2023,brand:"Honda",body:"Hatchback",engine:"Petrol",drive:"FWD",power:"High",origin:"Japan",fact:"The FK8 Civic Type R set the front-wheel-drive Nürburgring lap record at 7:43.8 in 2017.",sound:"turbocharged 4-cylinder howl"},
+  {name:"Nissan GT-R",year:2009,brand:"Nissan",body:"Coupe",engine:"Petrol",drive:"AWD",power:"High",origin:"Japan",fact:"The GT-R's VR38DETT twin-turbo V6 was hand-assembled by a single technician in a clean room.",sound:"twin-turbo V6 surge"},
+  {name:"Nissan Skyline GT-R",year:1999,brand:"Nissan",body:"Coupe",engine:"Petrol",drive:"AWD",power:"High",origin:"Japan",fact:"The R34 GT-R's ATTESA E-TS AWD system could vary torque split 100ms faster than a human blink.",sound:"RB26DETT turbo flutter"},
+  {name:"Mazda MX-5",year:2016,brand:"Mazda",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Low",origin:"Japan",fact:"The MX-5 Miata is the world's best-selling two-seat roadster with over 1 million produced.",sound:"zippy 4-cylinder rev"},
+  {name:"Mazda RX-7",year:1993,brand:"Mazda",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Medium",origin:"Japan",fact:"The RX-7's rotary engine has no pistons — a triangular rotor spins eccentrically inside an oval chamber.",sound:"rotary 13B banshee scream"},
+  {name:"Subaru Impreza WRX STI",year:2004,brand:"Subaru",body:"Sedan",engine:"Petrol",drive:"AWD",power:"High",origin:"Japan",fact:"The WRX STI dominated the World Rally Championship with drivers like Colin McRae and Petter Solberg.",sound:"EJ20 boxer burble"},
+  {name:"Mitsubishi Lancer Evolution",year:2006,brand:"Mitsubishi",body:"Sedan",engine:"Petrol",drive:"AWD",power:"High",origin:"Japan",fact:"The Evo's Super-AYC rear differential can actively vary torque between wheels for corner exit.",sound:"4G63T turbo spool"},
+  {name:"Lexus LFA",year:2012,brand:"Lexus",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"Japan",fact:"The LFA's 1LR-GUE V10 revs to 9000rpm and its exhaust note was developed with a Yamaha piano specialist.",sound:"V10 operatic shriek"},
+  {name:"Toyota Land Cruiser",year:2021,brand:"Toyota",body:"SUV",engine:"Petrol",drive:"AWD",power:"High",origin:"Japan",fact:"The Land Cruiser 300 retains a locking centre differential and crawl control for serious off-roading.",sound:"smooth V6 diesel rumble"},
+  {name:"Honda S2000",year:2000,brand:"Honda",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Medium",origin:"Japan",fact:"The S2000's F20C engine produced 124hp/litre naturally aspirated — a record at the time.",sound:"F20C VTEC 9000rpm scream"},
+  {name:"Toyota AE86",year:1985,brand:"Toyota",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Low",origin:"Japan",fact:"Made iconic by Initial D, the AE86 spawned an entire drifting culture in Japan.",sound:"4AGE twin-cam rev"},
+  // Germany
+  {name:"BMW M3",year:2021,brand:"BMW",body:"Sedan",engine:"Petrol",drive:"RWD",power:"High",origin:"Germany",fact:"The G80 M3 is the first M3 to offer xDrive AWD and also the first with a manual + AWD combo.",sound:"S58 inline-6 growl"},
+  {name:"BMW M5",year:2018,brand:"BMW",body:"Sedan",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The F90 M5 was the first M5 with AWD, yet could switch to pure RWD mode for track use.",sound:"twin-turbo V8 bellow"},
+  {name:"Porsche 911 GT3",year:2022,brand:"Porsche",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"Germany",fact:"The 992 GT3's 4.0L flat-six revs to 9000rpm and is derived directly from Porsche's motorsport program.",sound:"flat-6 naturally aspirated wail"},
+  {name:"Porsche Cayenne",year:2019,brand:"Porsche",body:"SUV",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The Cayenne saved Porsche from bankruptcy in the early 2000s — it now accounts for half of all Porsche sales.",sound:"smooth V6 SUV purr"},
+  {name:"Mercedes-AMG GT",year:2020,brand:"Mercedes",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"Germany",fact:"The AMG GT's M178 V8 was the first engine developed entirely in-house by AMG.",sound:"AMG 4.0 biturbo V8 thunder"},
+  {name:"Mercedes-Benz G63 AMG",year:2023,brand:"Mercedes",body:"SUV",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The G-Class body-on-frame design has remained largely unchanged since 1979.",sound:"handbuilt V8 basso rumble"},
+  {name:"Volkswagen Golf GTI",year:2021,brand:"Volkswagen",body:"Hatchback",engine:"Petrol",drive:"FWD",power:"Medium",origin:"Germany",fact:"The original 1976 Golf GTI is credited with creating the hot hatch genre.",sound:"EA888 turbo 4 pop-and-bang"},
+  {name:"Audi RS6 Avant",year:2020,brand:"Audi",body:"Sedan",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The RS6 Avant's 4.0L twin-turbo V8 uses cylinder deactivation, switching off 4 cylinders at cruise.",sound:"twin-turbo V8 quattro surge"},
+  {name:"Audi R8",year:2017,brand:"Audi",body:"Supercar",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The Audi R8 V10 shares its engine with the Lamborghini Huracán — both use the 5.2L LP V10.",sound:"naturally aspirated V10 scream"},
+  {name:"BMW i4 M50",year:2022,brand:"BMW",body:"Sedan",engine:"Electric",drive:"AWD",power:"High",origin:"Germany",fact:"The i4 M50 can sprint 0–100km/h in 3.9 seconds using BMW's Boost mode on the dual motors.",sound:"electric motor whine + synthesised BMW score"},
+  // USA
+  {name:"Ford Mustang GT",year:2020,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Ford Mustang is the world's best-selling sports car with over 9 million built since 1964.",sound:"Coyote 5.0 V8 burble"},
+  {name:"Ford Mustang Shelby GT500",year:2021,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The GT500's 5.2L supercharged V8 produces 760hp, making it the most powerful production Mustang ever.",sound:"supercharged V8 banshee"},
+  {name:"Ford Mustang Boss 302",year:2013,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Boss 302 used a road-racing-tuned 5.0L with individual throttle bodies and could rev to 7500rpm — 500rpm higher than the standard GT.",sound:"high-revving 5.0 flat-plane shriek"},
+  {name:"Ford Mustang Mach 1",year:2021,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The revived Mach 1 bridges the gap between the GT and Shelby GT350, using the GT350's intake manifold on the Coyote V8.",sound:"high-flow Coyote V8 intake roar"},
+  {name:"Ford Mustang Shelby GT350R",year:2016,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The GT350R's 5.2L Voodoo flat-plane V8 revs to 8250rpm — the highest-revving production Ford V8 ever made.",sound:"Voodoo flat-plane V8 8250rpm scream"},
+  {name:"Ford Mustang Dark Horse",year:2024,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Dark Horse is the first Mustang with a factory-optional manual trans oil cooler and Brembo brakes straight from the GT500.",sound:"hand-built 5.0 Coyote track howl"},
+  {name:"Ford Mustang EcoBoost",year:2019,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Medium",origin:"USA",fact:"The EcoBoost Mustang's 2.3L turbocharged four-cylinder outsells the V8 GT in many international markets.",sound:"turbocharged 4-cylinder spooling whistle"},
+  {name:"Ford Mustang Mach-E GT",year:2022,brand:"Ford",body:"SUV",engine:"Electric",drive:"AWD",power:"High",origin:"USA",fact:"The Mustang Mach-E GT Performance Edition produces 480hp and reaches 0–100km/h in 3.7 seconds, the quickest Mustang-badged SUV ever.",sound:"dual-motor electric surge with active exhaust note"},
+  {name:"Ford Mustang Shelby GT500KR",year:2008,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The KR (King of the Road) edition celebrated the 40th anniversary of the original 1968 GT500KR with a supercharged 540hp 5.4L V8.",sound:"supercharged 5.4 V8 King of the Road roar"},
+  {name:"Ford Mustang Bullitt",year:2019,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Bullitt edition pays homage to Steve McQueen's iconic 1968 Highland Green fastback from the film — it adds an open airbox and unique calibration for 480hp.",sound:"open-airbox Coyote V8 deep burble"},
+  {name:"Ford Mustang SVO",year:1984,brand:"Ford",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Medium",origin:"USA",fact:"The turbocharged SVO was the first Mustang with a four-cylinder since the Mustang II, and used a Borg-Warner T5 5-speed with a Hurst shifter.",sound:"turbocharged 2.3 four-cylinder whistle"},
+  {name:"Ford Mustang Cobra Jet",year:2023,brand:"Ford",body:"Coupe",engine:"Electric",drive:"RWD",power:"High",origin:"USA",fact:"The all-electric Cobra Jet 1400 drag car produces over 1400hp and ran the quarter-mile in 8.27 seconds — Ford's quickest Mustang ever.",sound:"electric drag motor high-voltage whine"},
+  {name:"Chevrolet Corvette C8",year:2020,brand:"Chevrolet",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The C8 moved the engine mid-ship for the first time in Corvette's 70-year history.",sound:"LT2 flat-plane V8 bark"},
+  {name:"Dodge Challenger SRT Hellcat",year:2019,brand:"Dodge",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Hellcat's 6.2L supercharged Hemi produces 717hp — it needs a special red key fob to unlock full power.",sound:"supercharged Hemi growl"},
+  {name:"Tesla Model S Plaid",year:2021,brand:"Tesla",body:"Sedan",engine:"Electric",drive:"AWD",power:"High",origin:"USA",fact:"The Model S Plaid's tri-motor setup produces 1020hp and propels it to 100km/h in 1.99 seconds.",sound:"tri-motor electric rush"},
+  {name:"Ford F-150 Lightning",year:2022,brand:"Ford",body:"Truck",engine:"Electric",drive:"AWD",power:"High",origin:"USA",fact:"The F-150 Lightning can power a house for 3 days using its Pro Power Onboard frunk generator.",sound:"silent electric surge"},
+  {name:"Jeep Wrangler Rubicon",year:2021,brand:"Jeep",body:"SUV",engine:"Petrol",drive:"AWD",power:"Medium",origin:"USA",fact:"The Wrangler Rubicon's Dana 44 axles and electronic lockers can articulate over 1000mm obstacles.",sound:"3.6 Pentastar V6 growl"},
+  {name:"Chevrolet Camaro ZL1",year:2018,brand:"Chevrolet",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Camaro ZL1 1LE lapped the Nürburgring faster than many exotic supercars at 7:16.04.",sound:"LT4 supercharged V8 scream"},
+  {name:"Dodge Viper ACR",year:2016,brand:"Dodge",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Viper ACR holds 13 production car lap records at tracks around the world.",sound:"8.4L V10 roar"},
+  {name:"Ford GT",year:2017,brand:"Ford",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"USA",fact:"The Ford GT's EcoBoost V6 produces 647hp — proving turbocharged sixes can beat naturally aspirated V12s.",sound:"twin-turbo V6 Le Mans howl"},
+  // Italy
+  {name:"Ferrari 488 GTB",year:2016,brand:"Ferrari",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"Italy",fact:"The 488 GTB's F154 twin-turbo V8 was Ferrari's first turbocharged road car engine since the F40.",sound:"twin-turbo V8 Ferrari shriek"},
+  {name:"Lamborghini Huracán",year:2015,brand:"Lamborghini",body:"Supercar",engine:"Petrol",drive:"AWD",power:"High",origin:"Italy",fact:"The Huracán's V10 is shared with the Audi R8 but tuned differently — it revs 200rpm higher.",sound:"LP610 V10 naturally aspirated scream"},
+  {name:"Lamborghini Urus",year:2019,brand:"Lamborghini",body:"SUV",engine:"Petrol",drive:"AWD",power:"High",origin:"Italy",fact:"The Urus was the first Lamborghini SUV since the LM002 in 1986, and became the brand's best-seller overnight.",sound:"twin-turbo V8 SUV bellow"},
+  {name:"Ferrari SF90 Stradale",year:2020,brand:"Ferrari",body:"Supercar",engine:"Hybrid",drive:"AWD",power:"High",origin:"Italy",fact:"The SF90 combines a 780hp V8 with three electric motors to produce 986hp total — Ferrari's most powerful road car.",sound:"plug-in hybrid V8 + electric whine"},
+  {name:"Alfa Romeo Giulia Quadrifoglio",year:2017,brand:"Alfa Romeo",body:"Sedan",engine:"Petrol",drive:"RWD",power:"High",origin:"Italy",fact:"The Giulia Quadrifoglio lapped the Nürburgring in 7:32, making it the fastest production sedan ever at the time.",sound:"Ferrari-derived twin-turbo V6 howl"},
+  {name:"Pagani Huayra",year:2013,brand:"Pagani",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"Italy",fact:"Each Huayra takes approximately 8 months to build and uses a Mercedes-AMG 6.0L V12 biturbo.",sound:"AMG V12 biturbo thunderclap"},
+  // UK
+  {name:"McLaren 720S",year:2017,brand:"McLaren",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"UK",fact:"The 720S can achieve 0-200km/h in 7.8 seconds — quicker than many hypercars costing 5× more.",sound:"M840T twin-turbo V8 shriek"},
+  {name:"Aston Martin DB11",year:2016,brand:"Aston Martin",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"UK",fact:"The DB11 uses a twin-turbo V12 co-developed with AMG, continuing a long Mercedes relationship.",sound:"twin-turbo V12 baritone"},
+  {name:"Range Rover Sport",year:2023,brand:"Land Rover",body:"SUV",engine:"Petrol",drive:"AWD",power:"High",origin:"UK",fact:"The Range Rover Sport SV uses a 523hp supercharged V8 capable of wading through 900mm of water.",sound:"supercharged V8 luxury rumble"},
+  {name:"Lotus Emira",year:2022,brand:"Lotus",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"UK",fact:"The Emira is the last Lotus with a combustion engine — all future Lotus models will be electric.",sound:"Toyota-sourced V6 rasp"},
+  // Korea / Others
+  {name:"Hyundai Ioniq 5",year:2022,brand:"Hyundai",body:"Hatchback",engine:"Electric",drive:"AWD",power:"High",origin:"Korea",fact:"The Ioniq 5 can charge from 10–80% in just 18 minutes using 800V ultra-fast charging.",sound:"electric motor hum"},
+  {name:"Kia EV6 GT",year:2022,brand:"Kia",body:"Hatchback",engine:"Electric",drive:"AWD",power:"High",origin:"Korea",fact:"The EV6 GT produces 577hp and accelerates to 100km/h in 3.5 seconds — faster than a Porsche 911 Carrera.",sound:"dual-motor electric surge"},
+  {name:"Hyundai Elantra N",year:2022,brand:"Hyundai",body:"Sedan",engine:"Petrol",drive:"FWD",power:"High",origin:"Korea",fact:"The Elantra N features Nürburgring-tuned suspension and an electronic limited-slip differential.",sound:"turbocharged 4-cylinder pop"},
+  // France
+  {name:"Renault Megane RS",year:2018,brand:"Renault",body:"Hatchback",engine:"Petrol",drive:"FWD",power:"Medium",origin:"France",fact:"The Mégane RS Trophy-R set the front-wheel-drive Nürburgring record at 7:40.098 in 2019.",sound:"turbocharged 4-banger rasp"},
+  {name:"Alpine A110",year:2018,brand:"Alpine",body:"Coupe",engine:"Petrol",drive:"RWD",power:"Medium",origin:"France",fact:"The A110 weighs just 1082kg — lighter than most city cars — thanks to an all-aluminium body.",sound:"turbocharged 4-cylinder zing"},
+  {name:"Bugatti Chiron",year:2017,brand:"Bugatti",body:"Supercar",engine:"Petrol",drive:"AWD",power:"High",origin:"France",fact:"The Chiron's 8.0L W16 quad-turbo engine produces 1479hp and its fuel pumps work as hard as a household's wiring.",sound:"W16 quad-turbo nuclear howl"},
+  // Sweden
+  {name:"Volvo XC90",year:2021,brand:"Volvo",body:"SUV",engine:"Hybrid",drive:"AWD",power:"High",origin:"Sweden",fact:"The XC90 T8 plug-in hybrid combines a supercharged and turbocharged 4-cylinder with two electric motors.",sound:"supercharged hybrid 4-cyl"},
+  {name:"Koenigsegg Regera",year:2016,brand:"Koenigsegg",body:"Supercar",engine:"Hybrid",drive:"RWD",power:"High",origin:"Sweden",fact:"The Regera has no traditional gearbox — its hybrid drivetrain connects directly to the rear wheels.",sound:"twin-turbo V8 + electric fusion"},
+  // More popular
+  {name:"Porsche Taycan Turbo S",year:2020,brand:"Porsche",body:"Sedan",engine:"Electric",drive:"AWD",power:"High",origin:"Germany",fact:"The Taycan Turbo S can do a full quarter-mile run repeatedly without power loss — a first for EVs.",sound:"electric motor whine with active sound"},
+  {name:"BMW 3 Series",year:2019,brand:"BMW",body:"Sedan",engine:"Petrol",drive:"RWD",power:"Medium",origin:"Germany",fact:"The G20 3 Series uses an adaptive M Sport suspension borrowed from the larger 5 Series.",sound:"B58 inline-6 silky rev"},
+  {name:"Mercedes C63 AMG",year:2015,brand:"Mercedes",body:"Sedan",engine:"Petrol",drive:"RWD",power:"High",origin:"Germany",fact:"The W205 C63 AMG used a naturally aspirated 6.2L V8, the last of its kind before turbocharging.",sound:"M156 naturally aspirated V8"},
+  {name:"Audi TT RS",year:2017,brand:"Audi",body:"Coupe",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The TT RS uses a 5-cylinder engine — an unusual configuration that produces a distinctive 5-beat exhaust note.",sound:"5-cylinder turbo warble"},
+  {name:"Toyota GR Yaris",year:2020,brand:"Toyota",body:"Hatchback",engine:"Petrol",drive:"AWD",power:"Medium",origin:"Japan",fact:"The GR Yaris was homologated for the World Rally Championship and uses a 3-cylinder engine producing 257hp.",sound:"3G272 turbo 3-cylinder thrash"},
+  {name:"Volkswagen Golf R",year:2022,brand:"Volkswagen",body:"Hatchback",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The Golf R Mk8 features a Drift and Special mode — the first ever on a Golf R.",sound:"EA888 5-cyl sound DSP"},
+  {name:"Ford Puma ST",year:2021,brand:"Ford",body:"Hatchback",engine:"Petrol",drive:"FWD",power:"Medium",origin:"UK",fact:"The Puma ST uses a 1.5L EcoBoost 3-cylinder with cylinder deactivation at low loads.",sound:"3-cylinder EcoBoost pop"},
+  {name:"Lamborghini Aventador",year:2011,brand:"Lamborghini",body:"Supercar",engine:"Petrol",drive:"AWD",power:"High",origin:"Italy",fact:"The Aventador's 6.5L V12 is naturally aspirated, revs to 8500rpm, and starts with a fighter-jet ignition sequence.",sound:"V12 naturally aspirated thunder"},
+  {name:"Ferrari F40",year:1992,brand:"Ferrari",body:"Supercar",engine:"Petrol",drive:"RWD",power:"High",origin:"Italy",fact:"The F40 was the last car personally approved by Enzo Ferrari before his death in 1988.",sound:"F120A twin-turbo V8 scream"},
+  {name:"Porsche 918 Spyder",year:2015,brand:"Porsche",body:"Supercar",engine:"Hybrid",drive:"AWD",power:"High",origin:"Germany",fact:"The 918 Spyder lapped the Nürburgring in 6:57 — the first production car under 7 minutes.",sound:"V8 hybrid + electric synthesis"},
+  {name:"McLaren P1",year:2014,brand:"McLaren",body:"Supercar",engine:"Hybrid",drive:"RWD",power:"High",origin:"UK",fact:"The P1 pairs a twin-turbo V8 with an electric motor producing 903hp, with Race mode adding 176hp more.",sound:"turbocharged V8 + electric stab"},
+  {name:"Tesla Model 3",year:2019,brand:"Tesla",body:"Sedan",engine:"Electric",drive:"RWD",power:"Medium",origin:"USA",fact:"The Model 3 became the world's best-selling EV in 2020 and crossed 1 million units produced in 2021.",sound:"single motor electric whistle"},
+  {name:"Rivian R1T",year:2021,brand:"Rivian",body:"Truck",engine:"Electric",drive:"AWD",power:"High",origin:"USA",fact:"The R1T was the world's first electric pickup truck to enter production, beating the Cybertruck by over a year.",sound:"quad-motor electric surge"},
+  {name:"Jeep Gladiator Mojave",year:2020,brand:"Jeep",body:"Truck",engine:"Petrol",drive:"AWD",power:"Medium",origin:"USA",fact:"The Gladiator Mojave is built for high-speed desert running with FOX shocks and a factory skid plate.",sound:"3.6 Pentastar V6 desert thrum"},
+  {name:"Porsche 718 Cayman GT4",year:2020,brand:"Porsche",body:"Coupe",engine:"Petrol",drive:"RWD",power:"High",origin:"Germany",fact:"The Cayman GT4 uses the same naturally aspirated 4.0L engine as the GT3, detuned by 20hp.",sound:"4.0 flat-six howl"},
+  {name:"Honda CR-V Hybrid",year:2021,brand:"Honda",body:"SUV",engine:"Hybrid",drive:"AWD",power:"Medium",origin:"Japan",fact:"The CR-V Hybrid uses a dual-motor i-MMD system and doesn't need a traditional torque converter.",sound:"hybrid e-CVT whisper"},
+  {name:"Subaru Forester",year:2020,brand:"Subaru",body:"SUV",engine:"Petrol",drive:"AWD",power:"Low",origin:"Japan",fact:"Every Subaru road car uses a boxer engine for a lower centre of gravity than conventional engines.",sound:"FA20 boxer thrum"},
+  {name:"Nissan Leaf",year:2018,brand:"Nissan",body:"Hatchback",engine:"Electric",drive:"FWD",power:"Low",origin:"Japan",fact:"The Nissan Leaf was the world's first mass-market electric car, launching in 2010.",sound:"quiet electric motor hum"},
+  {name:"BMW X5 M Competition",year:2020,brand:"BMW",body:"SUV",engine:"Petrol",drive:"AWD",power:"High",origin:"Germany",fact:"The X5 M Competition produces 617hp from its S63M twin-turbo V8 while weighing over 2.3 tonnes.",sound:"S63M twin-turbo V8 bellow"},
+  {name:"Mercedes-Benz EQS",year:2022,brand:"Mercedes",body:"Sedan",engine:"Electric",drive:"AWD",power:"High",origin:"Germany",fact:"The EQS 580 has a drag coefficient of just 0.20 Cd — the slipperiest production car ever made.",sound:"AMG EV tri-motor surge"},
+  {name:"Kia Stinger GT",year:2018,brand:"Kia",body:"Sedan",engine:"Petrol",drive:"RWD",power:"High",origin:"Korea",fact:"The Stinger GT was designed by Peter Schreyer, who previously styled the Audi TT.",sound:"twin-turbo V6 soundtrack"},
+  {name:"Mazda CX-5",year:2021,brand:"Mazda",body:"SUV",engine:"Diesel",drive:"AWD",power:"Medium",origin:"Japan",fact:"The CX-5 uses Mazda's SKYACTIV diesel with a unique harmonic-cancelling vibration system.",sound:"SKYACTIV-D diesel smooth idle"},
+  {name:"Hyundai Kona N",year:2021,brand:"Hyundai",body:"SUV",engine:"Petrol",drive:"FWD",power:"High",origin:"Korea",fact:"The Kona N is the world's first hot crossover from a Korean manufacturer.",sound:"turbocharged 4-cyl crackle"},
+];
+
+// Origin → continent map for yellow hints
+const CONTINENTS = {
+  Japan:'Asia', Korea:'Asia', Germany:'Europe', France:'Europe',
+  UK:'Europe', Italy:'Europe', Sweden:'Europe', USA:'Americas',
+};
+
+const ATTRS = ['brand','year','body','engine','drive','power','origin'];
+const POWER_ORDER = ['Low','Medium','High'];
+const MAX_GUESSES = 7;
+
+// ════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════
+let S = {
+  mode: 'daily',
+  target: null,
+  guesses: [],
+  gameOver: false, won: false,
+  hardMode: false,
+  confirmedHints: {}, // attr -> value (for hard mode)
+  stats: { played:0, won:0, streak:0, lastDate:null },
+  garage: [], // array of {name, year, guessCount}
+};
+
+function getDailyIdx() {
+  const epoch = new Date('2024-01-01'); const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.floor((today-epoch)/86400000) % CARS.length;
+}
+
+function loadPersist() {
+  try {
+    const s = localStorage.getItem('carodle_stats');
+    if (s) S.stats = JSON.parse(s);
+    const g = localStorage.getItem('carodle_garage');
+    if (g) S.garage = JSON.parse(g);
+    const hm = localStorage.getItem('carodle_hardmode');
+    if (hm) S.hardMode = JSON.parse(hm);
+  } catch(e) {}
+}
+function savePersist() {
+  localStorage.setItem('carodle_stats', JSON.stringify(S.stats));
+  localStorage.setItem('carodle_garage', JSON.stringify(S.garage));
+  localStorage.setItem('carodle_hardmode', JSON.stringify(S.hardMode));
+}
+function saveDailyState() {
+  if (S.mode !== 'daily') return;
+  const key = 'carodle_daily_' + new Date().toISOString().slice(0,10);
+  localStorage.setItem(key, JSON.stringify({ guesses: S.guesses, gameOver: S.gameOver, won: S.won }));
+}
+
+function initGame() {
+  loadPersist();
+  if (S.mode === 'daily') {
+    S.target = CARS[getDailyIdx()];
+    const key = 'carodle_daily_' + new Date().toISOString().slice(0,10);
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      const sv = JSON.parse(saved);
+      S.guesses = sv.guesses; S.gameOver = sv.gameOver; S.won = sv.won;
+      rebuildConfirmedHints();
+      renderAll();
+      if (S.gameOver) setTimeout(() => showResult(), 600);
+      return;
+    }
+    S.guesses = []; S.gameOver = false; S.won = false; S.confirmedHints = {};
+  } else {
+    S.target = CARS[Math.floor(Math.random() * CARS.length)];
+    S.guesses = []; S.gameOver = false; S.won = false; S.confirmedHints = {};
+  }
+  renderAll();
+}
+
+function rebuildConfirmedHints() {
+  S.confirmedHints = {};
+  S.guesses.forEach(n => {
+    const car = CARS.find(c => c.name.toLowerCase() === n.toLowerCase());
+    if (!car) return;
+    ATTRS.forEach(a => {
+      if (compareAttr(a, car[a], S.target[a]) === 'green') S.confirmedHints[a] = car[a];
+    });
+  });
+}
+
+function setMode(m) {
+  S.mode = m;
+  document.getElementById('dailyTab').classList.toggle('active', m==='daily');
+  document.getElementById('unlimitedTab').classList.toggle('active', m==='unlimited');
+  initGame();
+}
+
+function toggleHardMode() {
+  if (S.guesses.length > 0) { showToast('Start a new game to change mode'); return; }
+  S.hardMode = !S.hardMode;
+  savePersist();
+  document.getElementById('hardModeBtn').classList.toggle('lit', S.hardMode);
+  document.getElementById('hardBadge').classList.toggle('show', S.hardMode);
+  showToast(S.hardMode ? '⚡ Hard Mode ON' : 'Hard Mode OFF');
+}
+
+// ════════════════════════════════════════════════════
+// COMPARISON
+// ════════════════════════════════════════════════════
+function compareAttr(attr, guessVal, targetVal) {
+  if (String(guessVal) === String(targetVal)) return 'green';
+  if (attr === 'year') {
+    if (Math.abs(guessVal - targetVal) <= 2) return 'yellow';
+    return 'grey';
+  }
+  if (attr === 'power') {
+    const gi = POWER_ORDER.indexOf(guessVal);
+    const ti = POWER_ORDER.indexOf(targetVal);
+    if (Math.abs(gi-ti) === 1) return 'yellow';
+  }
+  if (attr === 'origin') {
+    if (CONTINENTS[guessVal] && CONTINENTS[guessVal] === CONTINENTS[targetVal]) return 'yellow';
+  }
+  if (attr === 'brand') {
+    // Same parent group (rough heuristic for yellow)
+    const groups = [
+      ['Toyota','Lexus'],['Volkswagen','Audi','Porsche','Lamborghini','Bugatti'],
+      ['Ford','Lincoln'],['Chevrolet','Dodge','Jeep'],
+      ['BMW','Rolls-Royce'],['Mercedes','AMG'],
+      ['Hyundai','Kia','Genesis'],['Honda','Acura'],
+    ];
+    for (const g of groups) if (g.includes(guessVal) && g.includes(targetVal)) return 'yellow';
+  }
+  return 'grey';
+}
+
+function yearArrow(guessYear, targetYear) {
+  if (guessYear === targetYear) return '';
+  return guessYear < targetYear ? ' ↑' : ' ↓';
+}
+
+// ════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════
+function renderAll() {
+  renderRPM();
+  renderGuesses();
+  renderEmptySlots();
+  renderProgress();
+  renderHints();
+  updateStatsUI();
+  renderGarage();
+  document.getElementById('inputArea').style.display = S.gameOver ? 'none' : 'block';
+  document.getElementById('hardModeBtn').classList.toggle('lit', S.hardMode);
+  document.getElementById('hardBadge').classList.toggle('show', S.hardMode && !S.gameOver);
+}
+
+function renderRPM() {
+  const bar = document.getElementById('rpmBar');
+  bar.innerHTML = '';
+  const total = 14;
+  const lit = Math.round((S.guesses.length / MAX_GUESSES) * total);
+  for (let i = 0; i < total; i++) {
+    const seg = document.createElement('div');
+    seg.className = 'rpm-seg';
+    const h = 4 + (i/total)*16;
+    seg.style.height = h + 'px';
+    if (i < lit) {
+      const hue = S.won ? 160 : (i < total*0.6 ? 140 : i < total*0.85 ? 45 : 0);
+      seg.style.background = `hsl(${hue},90%,55%)`;
+      seg.style.boxShadow = `0 0 6px hsl(${hue},90%,55%)`;
+    }
+    bar.appendChild(seg);
+  }
+}
+
+function renderGuesses() {
+  const container = document.getElementById('guessHistory');
+  container.innerHTML = '';
+  S.guesses.forEach((name, ri) => {
+    const car = CARS.find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (!car) return;
+    const row = document.createElement('div');
+    row.className = 'guess-row';
+    row.style.animationDelay = (ri*0.03)+'s';
+
+    // Name cell
+    const nc = document.createElement('div');
+    nc.className = 'car-name-cell';
+    nc.innerHTML = `<div class="car-name-main">${car.name}</div><div class="car-name-sub">${car.year} · ${car.body}</div>`;
+    row.appendChild(nc);
+
+    // Attribute cells
+    const attrDefs = [
+      { a:'brand', icon:'🏷️' },
+      { a:'year',  icon:'📅' },
+      { a:'body',  icon:'🚗' },
+      { a:'engine',icon:'⚙️' },
+      { a:'drive', icon:'⛽' },
+      { a:'power', icon:'⚡' },
+      { a:'origin',icon:'🌍' },
+    ];
+    attrDefs.forEach(({a,icon},j) => {
+      const result = compareAttr(a, car[a], S.target[a]);
+      const cell = document.createElement('div');
+      cell.className = `attr-cell cell-${result}`;
+      cell.style.animationDelay = (j*0.06+0.05)+'s';
+      const resultIcon = result==='green' ? '✓' : result==='yellow' ? '~' : '✗';
+      let val = String(car[a]);
+      let arrow = '';
+      if (a === 'year') {
+        arrow = `<span class="cell-arrow">${yearArrow(car.year, S.target.year)}</span>`;
+      }
+      cell.innerHTML = `<span class="cell-icon">${icon}</span><span class="cell-val">${val}${result==='green'?'':''}</span>${arrow}`;
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  });
+}
+
+function renderEmptySlots() {
+  const container = document.getElementById('emptySlots');
+  container.innerHTML = '';
+  if (S.gameOver) return;
+  const rem = MAX_GUESSES - S.guesses.length;
+  for (let i = 0; i < rem; i++) {
+    const row = document.createElement('div'); row.className = 'empty-row';
+    for (let j = 0; j < 8; j++) {
+      const c = document.createElement('div'); c.className = 'empty-cell'; row.appendChild(c);
+    }
+    container.appendChild(row);
+  }
+}
+
+function renderProgress() {
+  const used = S.guesses.length;
+  const pct = (used/MAX_GUESSES)*100;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('guessCountLabel').textContent = `${used} / ${MAX_GUESSES} guesses`;
+  const rem = MAX_GUESSES - used;
+  document.getElementById('attemptsLabel').textContent = S.gameOver ? (S.won ? 'Won!' : 'Over') : `${rem} left`;
+  // Dots
+  const dots = document.getElementById('attemptDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < MAX_GUESSES; i++) {
+    const d = document.createElement('div'); d.className = 'attempt-dot';
+    if (i < used) d.classList.add(S.won && i === used-1 ? 'won' : 'used');
+    dots.appendChild(d);
+  }
+}
+
+function renderHints() {
+  const used = S.guesses.length;
+  const hint = document.getElementById('engineHint');
+  if (used >= 5 && !S.won) {
+    hint.classList.add('show');
+    document.getElementById('engineHintText').textContent = S.target.sound;
+  } else {
+    hint.classList.remove('show');
+  }
+}
+
+function updateStatsUI() {
+  document.getElementById('sPlayed').textContent = S.stats.played;
+  document.getElementById('sWon').textContent = S.stats.won;
+  document.getElementById('sStreak').textContent = S.stats.streak;
+  document.getElementById('streakNum').textContent = S.stats.streak;
+}
+
+function renderGarage() {
+  const list = document.getElementById('garageList');
+  if (!S.garage.length) {
+    list.innerHTML = '<div style="font-size:0.78rem; color:var(--text-dim); text-align:center; padding:12px;">Win cars to fill your garage!</div>';
+    return;
+  }
+  list.innerHTML = '';
+  [...S.garage].reverse().slice(0,6).forEach(item => {
+    const div = document.createElement('div'); div.className = 'garage-item';
+    div.innerHTML = `<div class="garage-name">${item.name} <span style="color:var(--text-muted);font-weight:400;">${item.year}</span></div><div class="garage-guesses">${item.guessCount}/7</div>`;
+    list.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════════
+// SUBMIT GUESS
+// ════════════════════════════════════════════════════
+function submitGuess() {
+  if (S.gameOver) return;
+  const input = document.getElementById('carInput');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const car = CARS.find(c => c.name.toLowerCase() === val.toLowerCase());
+  if (!car) { showStatus('Unknown car — pick from the suggestions', 'error'); shakeInput(); return; }
+  if (S.guesses.some(g => g.toLowerCase() === car.name.toLowerCase())) {
+    showStatus('Already guessed that one!', 'error'); shakeInput(); return;
+  }
+
+  // Hard mode check
+  if (S.hardMode) {
+    for (const [attr, val2] of Object.entries(S.confirmedHints)) {
+      if (String(car[attr]) !== String(val2)) {
+        showStatus(`Hard Mode: must reuse confirmed ${attr} (${val2})`, 'error');
+        shakeInput(); return;
+      }
+    }
+  }
+
+  hideStatus();
+  S.guesses.push(car.name);
+  input.value = '';
+  document.getElementById('acList').style.display = 'none';
+
+  // Update confirmed hints
+  ATTRS.forEach(a => {
+    if (compareAttr(a, car[a], S.target[a]) === 'green') S.confirmedHints[a] = car[a];
+  });
+
+  const won = car.name.toLowerCase() === S.target.name.toLowerCase();
+  const lost = !won && S.guesses.length >= MAX_GUESSES;
+
+  if (won || lost) {
+    S.won = won; S.gameOver = true;
+    playEngineSound(won ? 'win' : 'fail');
+    updateStatsOnFinish(won);
+    saveDailyState();
+    renderAll();
+    setTimeout(() => showResult(), 900);
+  } else {
+    playEngineSound('guess');
+    renderAll();
+  }
+}
+
+function shakeInput() {
+  const el = document.getElementById('carInput');
+  el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 450);
+}
+
+// ════════════════════════════════════════════════════
+// AUTOCOMPLETE
+// ════════════════════════════════════════════════════
+document.getElementById('carInput').addEventListener('input', function() {
+  const v = this.value.toLowerCase().trim();
+  const list = document.getElementById('acList');
+  if (!v) { list.style.display='none'; return; }
+  const matches = CARS.filter(c =>
+    (c.name.toLowerCase().includes(v) || c.brand.toLowerCase().includes(v)) &&
+    !S.guesses.some(g => g.toLowerCase() === c.name.toLowerCase())
+  ).slice(0,8);
+  if (!matches.length) { list.style.display='none'; return; }
+  list.innerHTML = '';
+  matches.forEach(c => {
+    const item = document.createElement('div'); item.className = 'ac-item';
+    item.innerHTML = `<span class="ac-item-name">${c.name} ${c.year}</span><span class="ac-item-meta">${c.body} · ${c.engine} · ${c.origin}</span>`;
+    item.addEventListener('click', () => {
+      document.getElementById('carInput').value = c.name;
+      list.style.display = 'none';
+    });
+    list.appendChild(item);
+  });
+  list.style.display = 'block';
+});
+
+document.getElementById('carInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitGuess();
+  if (e.key === 'Escape') document.getElementById('acList').style.display='none';
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ac-wrap')) document.getElementById('acList').style.display='none';
+});
+
+// ════════════════════════════════════════════════════
+// STATUS
+// ════════════════════════════════════════════════════
+function showStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg; el.className = `status-msg show ${type}`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+function hideStatus() { document.getElementById('statusMsg').classList.remove('show'); }
+
+// ════════════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════════════
+function updateStatsOnFinish(won) {
+  S.stats.played++;
+  if (won) {
+    S.stats.won++;
+    const today = new Date().toISOString().slice(0,10);
+    const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+    S.stats.streak = (S.stats.lastDate === yesterday) ? S.stats.streak+1 : 1;
+    S.stats.lastDate = today;
+    // Add to garage
+    S.garage.push({ name: S.target.name, year: S.target.year, guessCount: S.guesses.length });
+    if (S.garage.length > 20) S.garage = S.garage.slice(-20);
+  } else {
+    S.stats.streak = 0;
+  }
+  savePersist();
+  updateStatsUI();
+}
+
+// ════════════════════════════════════════════════════
+// RESULT MODAL
+// ════════════════════════════════════════════════════
+function showResult() {
+  const t = S.target;
+  const gc = S.guesses.length;
+
+  const badge = document.getElementById('resultBadge');
+  badge.className = 'modal-badge ' + (S.won ? 'win' : 'loss');
+  badge.textContent = S.won ? '🏁' : '🚫';
+
+  document.getElementById('resultTitle').textContent = S.won ? 'Identified!' : 'Out of Fuel';
+  document.getElementById('resultSub').textContent = S.won
+    ? `Nailed it in ${gc} guess${gc===1?'':'es'}!`
+    : `The car was…`;
+  document.getElementById('resultCarName').textContent = `${t.name} (${t.year})`;
+
+  // Specs grid
+  const sg = document.getElementById('specsGrid');
+  sg.innerHTML = [
+    {l:'Brand',v:t.brand},{l:'Body Type',v:t.body},
+    {l:'Engine',v:t.engine},{l:'Drivetrain',v:t.drive},
+    {l:'Power',v:t.power+' (<150/150–300/>300 hp)'},{l:'Origin',v:t.origin},
+  ].map(s=>`<div class="spec-item"><div class="spec-lbl">${s.l}</div><div class="spec-val">${s.v}</div></div>`).join('');
+
+  document.getElementById('funFactBox').innerHTML = `🏎️ <strong>Fast Fact:</strong> ${t.fact}`;
+
+  // Share grid
+  let grid = `🏎️ Carodle${S.mode==='daily'?' #'+(getDailyIdx()+1):' (Unlimited)'}\n`;
+  grid += S.won ? `Got it in ${gc}/7\n\n` : 'DNF\n\n';
+  S.guesses.forEach(name => {
+    const car = CARS.find(c => c.name.toLowerCase() === name.toLowerCase());
+    ATTRS.forEach(a => {
+      const r = compareAttr(a, car[a], t[a]);
+      grid += r==='green'?'🟩':r==='yellow'?'🟨':'⬜';
+    });
+    grid += '\n';
+  });
+  document.getElementById('shareGrid').textContent = grid;
+
+  const btn = document.getElementById('playAgainBtn');
+  if (S.mode === 'daily') {
+    btn.textContent = 'See Stats'; btn.onclick = () => document.getElementById('resultModal').classList.remove('show');
+  } else {
+    btn.textContent = 'New Car →'; btn.onclick = () => { document.getElementById('resultModal').classList.remove('show'); setMode('unlimited'); };
+  }
+  document.getElementById('resultModal').classList.add('show');
+}
+
+function copyShare() {
+  navigator.clipboard.writeText(document.getElementById('shareGrid').textContent)
+    .then(() => showToast('📋 Copied to clipboard!'))
+    .catch(() => showToast('Copy failed'));
+}
+
+// ════════════════════════════════════════════════════
+// GARAGE MODAL
+// ════════════════════════════════════════════════════
+function openGarage() {
+  const list = document.getElementById('garageModalList');
+  if (!S.garage.length) {
+    list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px; font-size:0.88rem;">Your garage is empty. Start winning!</div>';
+  } else {
+    list.innerHTML = [...S.garage].reverse().map(item => `
+      <div class="garage-item">
+        <div>
+          <div class="garage-name">${item.name}</div>
+          <div style="font-size:0.68rem; color:var(--text-muted);">${item.year}</div>
+        </div>
+        <div class="garage-guesses">${item.guessCount}/7 guesses</div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('garageModal').classList.add('show');
+}
+
+// ════════════════════════════════════════════════════
+// HOW TO PLAY
+// ════════════════════════════════════════════════════
+function openHow() { document.getElementById('howModal').classList.add('show'); }
+function closeHow() { document.getElementById('howModal').classList.remove('show'); }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); });
+});
+
+// ════════════════════════════════════════════════════
+// SOUND (Web Audio API)
+// ════════════════════════════════════════════════════
+let actx = null;
+function getActx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  return actx;
+}
+function playEngineSound(type) {
+  try {
+    const ctx = getActx();
+    if (type === 'guess') {
+      // Short rev
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(80, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.12);
+      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime+0.25);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.3);
+      osc.start(); osc.stop(ctx.currentTime+0.3);
+    } else if (type === 'win') {
+      // Rev up victory
+      [80,100,130,160,200,260].forEach((f,i) => {
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sawtooth'; o.frequency.value = f;
+        const t = ctx.currentTime + i*0.08;
+        g.gain.setValueAtTime(0.15, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+        o.start(t); o.stop(t+0.2);
+      });
+    } else if (type === 'fail') {
+      // Engine sputter die
+      [200,160,120,80,50].forEach((f,i) => {
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sawtooth'; o.frequency.value = f;
+        const t = ctx.currentTime + i*0.12;
+        g.gain.setValueAtTime(0.1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t+0.18);
+        o.start(t); o.stop(t+0.18);
+      });
+    }
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+initGame();
+if (!localStorage.getItem('carodle_visited')) {
+  setTimeout(() => openHow(), 600);
+  localStorage.setItem('carodle_visited','1');
+}
+</script>
+</body>
+</html>
